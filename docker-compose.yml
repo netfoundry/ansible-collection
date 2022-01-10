@@ -1,0 +1,25 @@
+# usage: modify the volumes and run
+# docker-compose up --build network_from_download
+# docker-compose up --build run_playbook
+version: '3.3'
+services:
+  network_from_download:
+    image: netfoundry/ansible:network_from_download
+    build:
+      context: .
+    volumes:
+#      - ~/.netfoundry/nfziti-staging.json:/netfoundry/credentials.json
+      - ~/.netfoundry/credentials.json:/netfoundry/credentials.json
+#      - /tmp/kentest_HvpA_network.yml:/netfoundry/downloaded_network.yml
+      - ~/Downloads/downloaded_network.yml:/netfoundry/downloaded_network.yml
+    command: ansible-playbook netfoundry.platform.network_from_download
+  run_playbook:
+    image: netfoundry/ansible:run_playbook
+    build:
+      context: .
+    volumes:
+#      - ~/.netfoundry/nfziti-staging.json:/netfoundry/credentials.json
+      - ~/.netfoundry/credentials.json:/netfoundry/credentials.json
+#      - /tmp/MY_PLAYBOOK.yml:/netfoundry/playbook.yml
+      - ~/Downloads/playbook.yml:/netfoundry/playbook.yml
+    command: ansible-playbook /netfoundry/playbook.yml
