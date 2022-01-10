@@ -2,7 +2,7 @@
 
 ## Before You Begin
 
-Install [the NetFoundry Python module](/guides/python).
+Install [the NetFoundry Python module](https://developer.netfoundry.io/guides/python).
 
 ```bash
 pip install netfoundry
