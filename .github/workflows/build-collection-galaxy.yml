@@ -1,5 +1,5 @@
 ---
-name: Build Ansible Collection for Galaxy
+name: Build Collection for Galaxy
 
 on:
   - push
