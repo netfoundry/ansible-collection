@@ -36,8 +36,8 @@ jobs:
       env:
         COLLECTION_VERSION: ${{ steps.read_version.outputs.collection_version }}
       run: |
-        if [[ ${COLLECTION_VERSION} != ${GITHUB_REF/refs\/tags\//} ]]; then
-          echo "ERROR: mismatched Git release tag (${GITHUB_REF/refs\/tags\//}) and collection version (${COLLECTION_VERSION})." >&2
+        if [[ ${GITHUB_REF#refs/tags/v} != ${COLLECTION_VERSION} ]]; then
+          echo "ERROR: mismatched Git release tag (${GITHUB_REF#refs/tags/v}) and collection version (${COLLECTION_VERSION})." >&2
           exit 1
         fi
 
