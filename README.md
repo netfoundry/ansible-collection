@@ -28,5 +28,5 @@ docker run \
 ansible-galaxy collection install netfoundry.platform
 ansible-playbook netfoundry.platform.network_from_download \
     -e netfoundry_credentials=~/.netfoundry/credentials.json \
-    -e downloaded_network_file=/tmp/MY_PLAYBOOK.yml
+    -e netfoundry_downloaded_network=/tmp/MY_PLAYBOOK.yml
 ```
