@@ -9,7 +9,7 @@
 # run the network_from_download playbook with Compose
 docker-compose pull && \
   NETFOUNDRY_API_ACCOUNT=~/.netfoundry/credentials.json \
-  NETFOUNDRY_DOWNLOADED_NETWORK=/tmp/MY_PLAYBOOK.yml \
+  NETFOUNDRY_DOWNLOADED_NETWORK=~/Downloads/downloaded_network.yml \
     docker-compose run network_from_download
 ```
 
@@ -18,7 +18,7 @@ docker-compose pull && \
 docker run \
   --rm \
   --volume ~/.netfoundry/credentials.json:/netfoundry/credentials.json \
-  --volume /tmp/MY_PLAYBOOK.yml:/netfoundry/downloaded_network.yml \
+  --volume ~/Downloads/downloaded_network.yml:/netfoundry/downloaded_network.yml \
   netfoundry/ansible:latest \
     ansible-playbook netfoundry.platform.network_from_download
 ```
@@ -28,5 +28,5 @@ docker run \
 ansible-galaxy collection install netfoundry.platform
 ansible-playbook netfoundry.platform.network_from_download \
     -e netfoundry_credentials=~/.netfoundry/credentials.json \
-    -e netfoundry_downloaded_network=/tmp/MY_PLAYBOOK.yml
+    -e netfoundry_downloaded_network=~/Downloads/downloaded_network.yml
 ```
