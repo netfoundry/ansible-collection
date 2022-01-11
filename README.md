@@ -24,7 +24,7 @@ docker run \
 ```
 
 ```bash
-# install the module, collection, and run the network_from_download playbook
+# install the collection and run the network_from_download playbook
 ansible-galaxy collection install netfoundry.platform
 ansible-playbook netfoundry.platform.network_from_download \
     -e netfoundry_credentials=~/.netfoundry/credentials.json \
