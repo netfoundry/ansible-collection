@@ -3,6 +3,8 @@ name: Build Ansible Collection for Galaxy
 
 on:
   - push
+# release:
+#   types: [published]
 
 jobs:
   build:
@@ -12,8 +14,8 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build Collection and Publish to Galaxy
-        uses: docker://ghcr.io/artis3n/ansible_galaxy_collection@v2.4.2
-        #uses: artis3n/ansible_galaxy_collection@v2
+        #uses: docker://ghcr.io/artis3n/ansible_galaxy_collection@v2.4.2
+        uses: artis3n/ansible_galaxy_collection@v2
         with:
           api_key: '${{ secrets.GALAXY_API_KEY }}'
           collection_dir: 'netfoundry.platform'
