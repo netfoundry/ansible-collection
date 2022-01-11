@@ -1,19 +1,21 @@
 # usage:
 #
-# $ NETFOUNDRY_API_ACCOUNT=~/.netfoundry/nfziti-staging.json \
+# $ docker-compose pull && \
+#   NETFOUNDRY_API_ACCOUNT=~/.netfoundry/nfziti-staging.json \
 #   NETFOUNDRY_DOWNLOADED_NETWORK=/tmp/kentest_HvpA_network.yml \
-#       docker-compose up --build network_from_download
+#       docker-compose run network_from_download
 #
 # or
 #
-# $ NETFOUNDRY_API_ACCOUNT=~/.netfoundry/nfziti-staging.json \
+# $ docker-compose pull && \
+#   NETFOUNDRY_API_ACCOUNT=~/.netfoundry/nfziti-staging.json \
 #   NETFOUNDRY_ANSIBLE_PLAYBOOK=/tmp/MY_PLAYBOOK.yml \
-#       docker-compose up --build run_playbook
+#       docker-compose run run_playbook
 #
 version: '3.3'
 services:
   network_from_download:
-    image: netfoundry/ansible:network_from_download
+    image: netfoundry/ansible:latest
     build:
       context: .
     volumes:
@@ -21,7 +23,7 @@ services:
       - ${NETFOUNDRY_DOWNLOADED_NETWORK:-~/Downloads/downloaded_network.yml}:/netfoundry/downloaded_network.yml
     command: ansible-playbook netfoundry.platform.network_from_download
   run_playbook:
-    image: netfoundry/ansible:run_playbook
+    image: netfoundry/ansible:latest
     build:
       context: .
     volumes:

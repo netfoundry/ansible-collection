@@ -41,6 +41,14 @@ jobs:
           exit 1
         fi
 
+    - name: Build Collection and Publish to Galaxy
+      #uses: docker://ghcr.io/artis3n/ansible_galaxy_collection@v2.4.2
+      uses: artis3n/ansible_galaxy_collection@v2
+      with:
+        api_key: '${{ secrets.GALAXY_API_KEY }}'
+        collection_dir: 'netfoundry.platform'
+        publish: true
+
     - name: Append 'latest' tag if release published
       env:
         GITHUB_EVENT_ACTION: ${{ github.event.action }}
@@ -55,20 +63,13 @@ jobs:
         echo CONTAINER_TAGS="${CONTAINER_TAGS}"
         echo ::set-output name=container_tags::${CONTAINER_TAGS}
 
-    - name: Build Collection and Publish to Galaxy
-      #uses: docker://ghcr.io/artis3n/ansible_galaxy_collection@v2.4.2
-      uses: artis3n/ansible_galaxy_collection@v2
-      with:
-        api_key: '${{ secrets.GALAXY_API_KEY }}'
-        collection_dir: 'netfoundry.platform'
-        publish: true
-
     - name: Set up QEMU
       uses: docker/setup-qemu-action@master
       with:
         platforms: amd64,arm64
         # ignore arm/v7 (32bit) because unsupported by "cryptography" dep of
-        # Ansible and demand seems unlikely
+        # Ansible and demand seems unlikely. It may be feasible to build from
+        # source by adding the Rust compiler to Dockerfile
 
     - name: Set up Docker BuildKit
       id: buildx
