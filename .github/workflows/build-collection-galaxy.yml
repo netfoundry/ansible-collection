@@ -15,6 +15,6 @@ jobs:
         #uses: docker://ghcr.io/artis3n/ansible_galaxy_collection@v2.4.2
         uses: artis3n/ansible_galaxy_collection@v2
         with:
-          #api_key: '${{ secrets.GALAXY_API_KEY }}'
+          api_key: '${{ secrets.GALAXY_API_KEY }}'
           collection_dir: 'netfoundry.platform'
           publish: false

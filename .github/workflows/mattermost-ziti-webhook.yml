@@ -1,4 +1,4 @@
-name: mattermost-ziti-webhook
+name: Mattermost Notifications
 on: 
   create:
   delete:
