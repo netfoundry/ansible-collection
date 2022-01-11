@@ -3,8 +3,6 @@ name: Build Ansible Collection for Galaxy
 
 on:
   - push
-# release:
-#   types: [published]
 
 jobs:
   build:
@@ -19,4 +17,4 @@ jobs:
         with:
           api_key: '${{ secrets.GALAXY_API_KEY }}'
           collection_dir: 'netfoundry.platform'
-          publish: true
+          publish: false
