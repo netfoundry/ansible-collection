@@ -5,11 +5,16 @@
   # networks
 - hosts: localhost
   gather_facts: False
+  pre_tasks:
+    - name: Install NetFoundry Python Package
+      pip:
+        name: netfoundry
+      tags: pypi
   roles:
     - { role: network_from_download, tags: ['netfoundry'] }
   collections:
       - netfoundry.platform
   vars:
     # download as YAML from NF web console
-    # downloaded_network_file: /netfoundry/downloaded_network.yml
+    # netfoundry_downloaded_network: /netfoundry/downloaded_network.yml
     # netfoundry_credentials: /netfoundry/credentials.json

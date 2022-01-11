@@ -3,7 +3,7 @@
 
 - name: import vars from network download file
   include_vars:
-    file: "{{ downloaded_network_file }}"
+    file: "{{ netfoundry_downloaded_network }}"
     name: downloaded_network
   tags: vars
 

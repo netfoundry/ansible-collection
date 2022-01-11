@@ -20,7 +20,6 @@ rm -rf ~/.ansible/collections/ansible_collections/netfoundry/platform && \
 
 [NetFoundry API Developer Portal](https://developer.netfoundry.io/guides/ansible).
 
-
 ## Built-in Documentation
 
 Explanation of module parameters with practical examples
