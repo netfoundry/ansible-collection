@@ -2,7 +2,13 @@
 name: Build Collection for Galaxy
 
 on:
-  - push
+  push:
+    branches:    
+      - '*'         # matches every branch that doesn't contain a '/'
+      - '*/*'       # matches every branch containing a single '/'
+      - '**'        # matches every branch
+    # branches-ignore:
+    # - 'v*'          # ignore release tags
 
 jobs:
   build:
