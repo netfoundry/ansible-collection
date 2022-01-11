@@ -1,5 +1,5 @@
 ---
-name: Publish Collection to Ansible Galaxy
+name: Publish Collection to Ansible Galaxy and Docker Hub
 
 on:
   release:
@@ -83,6 +83,8 @@ jobs:
       with:
         context: . # build context is workspace
         builder: ${{ steps.buildx.outputs.name }}
+        build-args: | 
+          collection_version="==${{ steps.read_version.outputs.collection_version }}"
         platforms: linux/amd64,linux/arm/v7,linux/arm64
         push: true
         tags: ${{ steps.compose_tags.outputs.container_tags }}
