@@ -99,8 +99,6 @@ from ansible.module_utils.api import rate_limit_argument_spec, retry_argument_sp
 from netfoundry.organization import Organization
 from netfoundry.network_group import NetworkGroup
 from netfoundry.network import Network
-#from netfoundry.utility import Utility
-from uuid import UUID
 
 def run_module():
     # define available arguments/parameters a user can pass to the module
@@ -109,6 +107,7 @@ def run_module():
         network_group=dict(type='str', required=False),
         organization=dict(type='str', required=False),
         credentials=dict(type='path', required=False),
+        profile=dict(type='str', required=False),
         session=dict(type='dict', required=False),
         inventory=dict(type='bool', required=False, default=False),
         proxy=dict(type='str', required=False)
@@ -151,47 +150,30 @@ def run_module():
         organization = Organization(
             credentials=module.params['credentials'],
             organization_label=module.params['organization'] if 'organization' in module.params else None,
+            profile=module.params['profile'] if 'profile' in module.params else None,
             proxy=module.params['proxy']
         )
     renewal = {
         "credentials": organization.credentials,
+        "profile": organization.profile,
         "token": organization.token,
         "proxy": organization.proxy,
         "organization_id": organization.id
     }
     result['session'] = renewal
 
-    # assign network_id if UUIDv4 else network_name
-    if module.params['network_group']:
-        try: UUID(module.params['network_group'], version=4)
-        except ValueError: # is not UUIDv4
-            network_group_name = module.params['network_group']
-            network_group_id = None
-        else: # is UUIDv4
-            network_group_id = module.params['network_group']
-            network_group_name = None
-    else:
-        network_group_id = None
-        network_group_name = None
-
     # use some Network Group, default is to use the first and there's typically only one
     network_group = NetworkGroup(
         organization,
-        network_group_name=module.params['network_group'] if network_group_name else None,
-        network_group_id=module.params['network_group'] if network_group_id else None
+        group=module.params['network_group'] if module.params['network_group'] else None
     )
 
     if module.params['network']:
         network_id = None
         network_name = None
-        # assign network_id if UUIDv4 else network_name
-        try: UUID(module.params['network'], version=4)
-        except ValueError: network_name = module.params['network']
-        else: network_id = module.params['network']
         network = Network(
             network_group,
-            network_id=network_id if network_id else None,
-            network_name=network_name if network_name else None,
+            network=module.params['network']
         )
         result['network'] = {
             **network.describe, 
@@ -214,17 +196,10 @@ def run_module():
         # use the Network Group of the specified Network
         network_group = NetworkGroup(organization, network_group_id=network.network_group_id)
     elif module.params['network_group']:
-        network_group_id = None
-        network_group_name = None
-        # assign network_group_id if UUIDv4 else network_group_name
-        try: UUID(module.params['network_group'], version=4)
-        except ValueError: network_group_name = module.params['network_group']
-        else: network_group_id = module.params['network_group']
         # use the specified Network Group
         network_group = NetworkGroup(
             organization, 
-            network_group_id=network_group_id if network_group_id else None,
-            network_group_name=network_group_name if network_group_name else None
+            group=module.params['network_group']
         )
     else:
         # use the default Network Group (the first Network Group ID known to the Organization)
