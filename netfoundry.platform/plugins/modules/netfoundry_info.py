@@ -3,6 +3,7 @@
 # Copyright: (c) 2020, Kenneth Bingham <kenneth.bingham@netfoundry.io>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
+from distutils.log import debug
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
@@ -103,13 +104,15 @@ from netfoundry.network import Network
 def run_module():
     # define available arguments/parameters a user can pass to the module
     module_args = dict(
-        network=dict(type='str', required=False),
-        network_group=dict(type='str', required=False),
-        organization=dict(type='str', required=False),
-        credentials=dict(type='path', required=False),
-        profile=dict(type='str', required=False),
-        session=dict(type='dict', required=False),
-        inventory=dict(type='bool', required=False, default=False),
+        network=dict(type='str'),
+        network_group=dict(type='str'),
+        organization=dict(type='str'),
+        credentials=dict(type='path'),
+        profile=dict(type='str'),
+        session=dict(type='dict'),
+        inventory=dict(type='bool', default=False),
+        log_file=dict(type='str'),
+        debug=dict(type='bool'),
         proxy=dict(type='str', required=False)
     )
 
