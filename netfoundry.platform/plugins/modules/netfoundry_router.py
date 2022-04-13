@@ -289,7 +289,7 @@ def run_module():
     if len(found) == 0:
         if state == "present":
             try:
-                result['message'] = network.create_edge_router(**properties,wait=module.params['wait'])
+                result['message'] = network.create_edge_router(**properties, wait=module.params['wait'])
             except Exception as e:
                 raise AnsibleError('Failed to create edge router "{}". Caught exception: {}'.format(module.params['name'], to_native(e)))
             result['changed'] = True
