@@ -153,7 +153,9 @@ def run_module():
         "token": organization.token,
         "credentials": organization.credentials,
         "proxy": organization.proxy,
-        "organization_id": organization.id
+        "organization_id": organization.id,
+        "log_file": organization.log_file,
+        "debug": organization.debug,
     }
 
     # instantiate some utility methods like snake(), camel() for translating styles
