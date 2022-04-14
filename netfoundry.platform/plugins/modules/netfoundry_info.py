@@ -3,6 +3,7 @@
 # Copyright: (c) 2020, Kenneth Bingham <kenneth.bingham@netfoundry.io>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 from __future__ import (absolute_import, division, print_function)
+from distutils.log import debug
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
@@ -95,7 +96,7 @@ message:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.api import rate_limit_argument_spec, retry_argument_spec
-#from ansible.errors import AnsibleError
+from ansible.errors import AnsibleError
 from netfoundry.organization import Organization
 from netfoundry.network_group import NetworkGroup
 from netfoundry.network import Network
@@ -103,13 +104,15 @@ from netfoundry.network import Network
 def run_module():
     # define available arguments/parameters a user can pass to the module
     module_args = dict(
-        network=dict(type='str', required=False),
-        network_group=dict(type='str', required=False),
-        organization=dict(type='str', required=False),
-        credentials=dict(type='path', required=False),
-        profile=dict(type='str', required=False),
-        session=dict(type='dict', required=False),
-        inventory=dict(type='bool', required=False, default=False),
+        network=dict(type='str'),
+        network_group=dict(type='str'),
+        organization=dict(type='str'),
+        credentials=dict(type='path'),
+        profile=dict(type='str'),
+        session=dict(type='dict'),
+        inventory=dict(type='bool', default=False),
+        log_file=dict(type='str'),
+        debug=dict(type='bool', default=False),
         proxy=dict(type='str', required=False)
     )
 
@@ -151,16 +154,23 @@ def run_module():
             credentials=module.params['credentials'],
             organization_label=module.params['organization'] if 'organization' in module.params else None,
             profile=module.params['profile'] if 'profile' in module.params else None,
-            proxy=module.params['proxy']
+            proxy=module.params['proxy'],
+            log_file=module.params['log_file'],
+            debug=module.params['debug'],
         )
-    renewal = {
+    else:
+        raise AnsibleError("Need arg 'credentials' or 'session' to use a NetFoundry organization")
+
+    session = {
         "credentials": organization.credentials,
         "profile": organization.profile,
         "token": organization.token,
         "proxy": organization.proxy,
-        "organization_id": organization.id
+        "organization_id": organization.id,
+        "log_file": organization.log_file,
+        "debug": organization.debug,
     }
-    result['session'] = renewal
+    result['session'] = session
 
     # use some Network Group, default is to use the first and there's typically only one
     network_group = NetworkGroup(
@@ -176,29 +186,32 @@ def run_module():
             network=module.params['network']
         )
         result['network'] = {
-            **network.describe, 
+            **network.describe,
             'data_centers': network.get_edge_router_data_centers(),
-            'session': renewal,
+            'session': session,
         }
 
         if module.params['inventory']:
             # optionally perform expensive inventory operations
-            result['network']['endpoints'] = network.endpoints() # both types of endpoints
-            result['network']['device_endpoints'] = network.endpoints(typeId="Device") # normal endpoint
-            result['network']['router_endpoints'] = network.endpoints(typeId="Router") # system-managed built-in to router
-            result['network']['services'] = network.services()
-            result['network']['hosted_edge_routers'] = network.edge_routers(only_hosted=True)
-            result['network']['customer_edge_routers'] = network.edge_routers(only_customer=True)
-            result['network']['edge_router_policies'] = network.edge_router_policies()
-            result['network']['app_wans'] = network.app_wans()
-            result['network']['posture_checks'] = network.posture_checks()
+            result['network'] = {
+                **result['network'],
+                'endpoints': network.endpoints(),                        # both types of endpoints
+                'device_endpoints': network.endpoints(typeId="Device"),  # normal endpoint
+                'router_endpoints': network.endpoints(typeId="Router"),  # system-managed built-in to router
+                'services': network.services(),
+                'hosted_edge_routers': network.edge_routers(only_hosted=True),
+                'customer_edge_routers': network.edge_routers(only_customer=True),
+                'edge_router_policies': network.edge_router_policies(),
+                'app_wans': network.app_wans(),
+                'posture_checks': network.posture_checks(),
+            }
 
         # use the Network Group of the specified Network
         network_group = NetworkGroup(organization, network_group_id=network.network_group_id)
     elif module.params['network_group']:
         # use the specified Network Group
         network_group = NetworkGroup(
-            organization, 
+            organization,
             group=module.params['network_group']
         )
     else:
@@ -210,14 +223,14 @@ def run_module():
     #  operations so that only a single parameter is necessary when calling
     #  subsequent modules e.g. netfoundry_endpoint
     result['organization'] = {
-        **organization.describe, 
-        "session": renewal
+        **organization.describe,
+        "session": session
     }
     result['network_group'] = {
         **network_group.describe,
-        "session": renewal
+        "session": session
     }
-    
+
     # in the event of a successful module execution, you will want to
     # simple AnsibleModule.exit_json(), passing the key/value results
     module.exit_json(**result)

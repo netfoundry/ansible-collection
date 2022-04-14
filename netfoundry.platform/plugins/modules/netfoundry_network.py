@@ -160,15 +160,15 @@ def run_module():
     # part where your module will do what it needs to do)
     result['original_message'] = module.params
 
-    organization = Organization(
-        **module.params['network_group']['session']
-    )
+    organization = Organization(**module.params['network_group']['session'])
 
     result['session'] = {
         "token": organization.token,
         "credentials": organization.credentials,
         "proxy": organization.proxy,
-        "organization_id": organization.id
+        "organization_id": organization.id,
+        "log_file": organization.log_file,
+        "debug": organization.debug,
     }
 
     # instantiate some utility methods like snake(), camel() for translating styles

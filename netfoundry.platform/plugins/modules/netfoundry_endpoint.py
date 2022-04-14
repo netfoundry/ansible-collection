@@ -153,7 +153,9 @@ def run_module():
         "token": organization.token,
         "credentials": organization.credentials,
         "proxy": organization.proxy,
-        "organization_id": organization.id
+        "organization_id": organization.id,
+        "log_file": organization.log_file,
+        "debug": organization.debug,
     }
 
     # instantiate some utility methods like snake(), camel() for translating styles
@@ -167,18 +169,22 @@ def run_module():
     network = Network(network_group, network_id=module.params['network']['id'])
 
     # check if UUIDv4
-    try: UUID(module.params['name'], version=4)
+    try:
+        UUID(module.params['name'], version=4)
     except ValueError:
         # else assume is an Endpoint
-        found = network.get_resources(type="endpoints",name=module.params['name'])
+        found = network.get_resources(type="endpoints", name=module.params['name'])
     # it's a UUID and so we assign the property directly
-    else: 
-        found = [network.get_resource(type="endpoint",id=module.params['name'])]
+    else:
+        found = [network.get_resource(type="endpoint", id=module.params['name'])]
 
     if len(found) == 0:
         if module.params['state'] == "PROVISIONED":
-            result['message'] = network.create_endpoint(name=module.params['name'], attributes=module.params['attributes'], 
-                session_identity=module.params['sessionIdentity'], wait=module.params['wait'])
+            result['message'] = network.create_endpoint(
+                name=module.params['name'],
+                attributes=module.params['attributes'],
+                session_identity=module.params['sessionIdentity'],
+                wait=module.params['wait'])
             result['changed'] = True
             if 'jwt' in result['message'].keys() and result['message']['jwt'] and module.params['dest']:
                 save_one_time_token(name=result['message']['name'], jwt=result['message']['jwt'], dest=module.params['dest'])
@@ -197,7 +203,8 @@ def run_module():
                 save_one_time_token(name=result['message']['name'], jwt=result['message']['jwt'], dest=module.params['dest'])
         elif module.params['state'] == "DELETED":
             if endpoint['typeId'] == "Device":
-                try: network.delete_endpoint(id=endpoint['id'])
+                try:
+                    network.delete_endpoint(id=endpoint['id'])
                 except Exception as e:
                     raise AnsibleError('Failed to delete Endpoint "{}". Caught exception: {}'.format(module.params['name'], to_native(e)))
                 result['changed'] = True
