@@ -24,7 +24,7 @@
   netfoundry_network:
     name: "{{ downloaded_network.name }}"
     size: "{{ downloaded_network.size }}"
-    datacenter: "{{ downloaded_network.locationCode }}"
+    datacenter: "{{ downloaded_network.region }}"
     version: "{{ downloaded_network.productVersion }}"
     state: PROVISIONED
     network_group: "{{ netfoundry_api.network_group }}"
