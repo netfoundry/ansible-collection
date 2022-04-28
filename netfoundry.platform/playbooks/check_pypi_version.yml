@@ -1,0 +1,44 @@
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - block:
+      - name: Find the latest version of the NetFoundry Python module
+        uri:
+          url: https://pypi.org/pypi/{{ pypi_module }}/json
+          method: GET
+          return_content: yes
+          status_code: 200
+          body_format: json
+        register: pypy_response
+      - set_fact:
+          required_version: "{{ pypy_response.json.info.version }}"
+      when: required_version is not defined or required_version == "latest"
+
+    - debug:
+        var: required_version
+
+    - name: Find the installed version of the NetFoundry Python module
+      shell: pip show {{ pypi_module }}
+      # ignore_errors: true
+      changed_when: false
+      register: pip_show
+    - set_fact:
+        installed_version: "{{ item | regex_replace('^Version:\\s+(\\d+\\.\\d+\\.\\d+)$', '\\1') }}"
+      loop: "{{ pip_show.stdout_lines }}"
+      when: installed_version is not defined or not installed_version | regex_search('^\\d+\\.\\d+\\.\\d+$')
+    - debug:
+        var: installed_version
+
+    - name: Compare installed version with required version
+      assert:
+        that:
+          - installed_version is version_compare(required_version, '==')
+        fail_msg: Installed version {{ installed_version }} does not match required version {{ required_version }}
+        success_msg: Installed version matches required version {{ required_version }}
+
+  vars:
+    require_version: latest
+    pypi_module: netfoundry
+      
+
