@@ -1,6 +1,8 @@
 
 - hosts: localhost
   gather_facts: no
+  collections:
+    - netfoundry.platform
   tasks:
     - block:
       - name: Find the latest version of the NetFoundry Python module
@@ -19,14 +21,9 @@
         var: required_version
 
     - name: Find the installed version of the NetFoundry Python module
-      shell: pip show {{ pypi_module }}
-      # ignore_errors: true
-      changed_when: false
-      register: pip_show
-    - set_fact:
-        installed_version: "{{ item | regex_replace('^Version:\\s+(\\d+\\.\\d+\\.\\d+)$', '\\1') }}"
-      loop: "{{ pip_show.stdout_lines }}"
-      when: installed_version is not defined or not installed_version | regex_search('^\\d+\\.\\d+\\.\\d+$')
+      set_fact:
+        installed_version: "{{ lookup('netfoundry.platform.pypi_module_version') }}"
+        # installed_version: "{{ lookup('netfoundry.platform.pypi_module_version') | regex_replace('^v(\\d+\\.\\d+\\.\\d+)$', '\\1') }}"
     - debug:
         var: installed_version
 
