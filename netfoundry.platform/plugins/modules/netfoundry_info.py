@@ -2,8 +2,10 @@
 
 # Copyright: (c) 2020, Kenneth Bingham <kenneth.bingham@netfoundry.io>
 # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 from distutils.log import debug
+
 __metaclass__ = type
 
 ANSIBLE_METADATA = {
@@ -94,12 +96,14 @@ message:
     returned: always
 '''
 
-from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.api import rate_limit_argument_spec, retry_argument_spec
 from ansible.errors import AnsibleError
-from netfoundry.organization import Organization
-from netfoundry.network_group import NetworkGroup
+from ansible.module_utils.api import (rate_limit_argument_spec,
+                                      retry_argument_spec)
+from ansible.module_utils.basic import AnsibleModule
 from netfoundry.network import Network
+from netfoundry.network_group import NetworkGroup
+from netfoundry.organization import Organization
+
 
 def run_module():
     # define available arguments/parameters a user can pass to the module
@@ -143,8 +147,6 @@ def run_module():
     if module.check_mode:
         module.exit_json(**result)
 
-    # manipulate or modify the state as needed (this is going to be the
-    # part where your module will do what it needs to do)
     result['original_message'] = module.params
 
     if module.params['session'] is not None:
