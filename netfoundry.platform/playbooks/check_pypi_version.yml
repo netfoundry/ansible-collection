@@ -23,7 +23,6 @@
     - name: Find the installed version of the NetFoundry Python module
       set_fact:
         installed_version: "{{ lookup('netfoundry.platform.pypi_module_version') }}"
-        # installed_version: "{{ lookup('netfoundry.platform.pypi_module_version') | regex_replace('^v(\\d+\\.\\d+\\.\\d+)$', '\\1') }}"
     - debug:
         var: installed_version
 
@@ -37,5 +36,4 @@
   vars:
     require_version: latest
     pypi_module: netfoundry
-      
 

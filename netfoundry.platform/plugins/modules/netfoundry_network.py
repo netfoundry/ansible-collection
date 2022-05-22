@@ -190,7 +190,8 @@ def run_module():
     # these properties will be style translated from snake to lower camel as API properties when patching an existing resource
     properties = {
         "name": module.params['name'],
-        "size": module.params['size']
+        "size": module.params['size'],
+        "wait": module.params['wait'],
     }
     if module.params['version'] and not module.params['version'] in ["default","Default","DEFAULT","None","null",""]:
         properties['version'] = module.params['version']
