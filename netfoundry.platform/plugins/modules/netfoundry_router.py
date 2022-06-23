@@ -163,15 +163,12 @@ message:
 '''
 
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.api import rate_limit_argument_spec, retry_argument_spec
 from ansible.errors import AnsibleError
 from ansible.module_utils._text import to_native
 from netfoundry.organization import Organization
 from netfoundry.network_group import NetworkGroup
 from netfoundry.network import Network
-from netfoundry.utility import Utility
-from uuid import UUID
-from time import time, sleep
+from netfoundry.utility import Utility, DC_PROVIDERS
 
 def run_module():
     # define available arguments/parameters a user can pass to the module
@@ -179,7 +176,7 @@ def run_module():
         name=dict(type='str', required=True),
         attributes=dict(type='list', elements='str', required=False, default=[]),
 #        georegion=dict(type='str', required=False),
-        provider=dict(type='str', required=False, default="AWS", choices=["AWS", "AZURE", "GCP", "OCP"]),
+        provider=dict(type='str', required=False, default="AWS", choices=DC_PROVIDERS),
         datacenter=dict(type='str', required=False),
         state=dict(type='str', required=False, default="present", choices=["present","absent","PROVISIONING", "PROVISIONED", "REGISTERED","DELETED"]),
         network=dict(type='dict', required=True),
@@ -261,33 +258,23 @@ def run_module():
         provider = module.params['provider']
         # all hosted routers have a link listener
         properties['link_listener'] = True
-        # check if UUIDv4
-        try: UUID(datacenter, version=4)
-        except ValueError:
-            # else assume is a location code and resolve to ID
-            try:
-                if 'data_centers' in module.params['network']:
-                    provider_data_centers = [dc for dc in module.params['network']['data_centers'] if dc['provider'] == provider]
-                else:
-                    # else try to find the matching name+provider pair in the API
-                    provider_data_centers = network.get_edge_router_data_centers(provider=provider)
+        try:
+            if 'data_centers' in module.params['network']:
+                provider_data_centers = [dc for dc in module.params['network']['data_centers'] if dc['provider'] == provider]
+            else:
+                # else try to find the matching name+provider pair in the API
+                provider_data_centers = network.get_edge_router_data_centers(provider=provider)
 
-                # try to find a matching datacenter name (locationCode) and provider pair if the datacenter inventory was included with the network param
-                dc_matches = [dc for dc in provider_data_centers if dc['locationCode'] == datacenter]
-                properties['data_center_id'] = dc_matches[0]['id']
-            except Exception as e:
-                raise AnsibleError(
-                    'Failed to find exactly one datacenter "{datacenter}". Caught exception: {exception}. Valid datacenter names for {provider} are "{provider_data_centers}"'.format(
-                        datacenter=datacenter,
-                        provider=provider, 
-                        exception=to_native(e),
-                        provider_data_centers=[dc['locationCode'] for dc in provider_data_centers],
-                    ))
-        # it's a UUID and so we assign the property directly
-        else: properties['data_center_id'] = datacenter
+            # try to find a matching datacenter name (locationCode) and provider pair if the datacenter inventory was included with the network param
+            dc_matches = [dc for dc in provider_data_centers if dc['locationCode'] == datacenter]
+            properties['location_code'] = dc_matches[0]['locationCode']
+            properties['provider'] = provider
+        except Exception as e:
+            raise AnsibleError(
+                f'Failed to find exactly one datacenter named "{datacenter}". Caught exception: {to_native(e)}. Valid datacenter names for {provider} are "{[dc["locationCode"] for dc in provider_data_centers]}"')
 
     # find any router with the specified name
-    found = network.get_resources(type="edge-routers",name=properties['name'])
+    found = network.get_resources(type="edge-routers", name=properties['name'])
     if len(found) == 0:
         if state == "present":
             try:
