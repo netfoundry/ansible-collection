@@ -22,4 +22,4 @@ jobs:
       with:
         ziti-id: ${{ secrets.ZITI_MATTERMOST_IDENTITY }}
         webhook-url: ${{ secrets.ZITI_MATTERMOST_WEBHOOK_URL }}
-        webhook-secret: ${{ secrets.ZITI_MATTERMOSTI_WEBHOOK_SECRET }}
+        webhook-secret: ${{ secrets.ZITI_MATTERMOST_WEBHOOK_SECRET }}
