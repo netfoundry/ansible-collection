@@ -5,7 +5,7 @@
 Install [the NetFoundry Python module](https://developer.netfoundry.io/guides/python).
 
 ```bash
-pip install netfoundry
+pip install --upgrade netfoundry # >= 5.10.0
 ```
 
 Ensure you have the latest release of the collection.
