@@ -260,6 +260,8 @@ def run_module():
     elif len(found) == 1:
         router = found[0]
         if state == "present":
+            if router['status'] == 'ERROR':
+                raise AnsibleError(f"router '{router['name']}' has status ERROR, please delete then re-create")
             # sanity check datacenter IDs
             if module.params['datacenter']:
                 if not router.get('region'):
