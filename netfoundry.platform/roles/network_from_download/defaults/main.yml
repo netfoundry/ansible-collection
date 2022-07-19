@@ -1,9 +1,8 @@
 ---
 # defaults file for network_from_download
 
-network_size: small           # vertical scaling factor for compute instances
-network_datacenter: us-east-1 #
-network_version: default      # "default" (i.e. stable) or "latest" (i.e. experimental) or "7.3.23" (product version) 
+network_size: small               # vertical scaling factor for compute instances
+network_version: default          # "default" (i.e. stable) or "latest" (i.e. experimental) or "7.3.23" (product version) 
 netfoundry_credentials: /netfoundry/credentials.json
 netfoundry_downloaded_network: /netfoundry/downloaded_network.yml
 netfoundry_identity_organization: null

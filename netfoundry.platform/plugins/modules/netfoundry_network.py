@@ -38,6 +38,12 @@ options:
         description: provision the Controller in a NetFoundry datacenter by locationCode or ID from netfoundry_info.data_centers
         required: false
         type: str
+    provider:
+        description: cloud provider of the datacenter region is ignored if datacenter arg is not defined
+        required: false
+        type: str
+        choices: ["OCI", "AWS"]
+        default: OCI
     state:
         description: The desired state.
         required: false
@@ -75,7 +81,8 @@ EXAMPLES = r'''
 - name: Create the Network
   netfoundry.platform.netfoundry_network:
     name: BibbidiBobbidiBoo
-    datacenter: eu-west-2 # most AWS regions are valid values
+    datacenter: eu-amsterdam-1
+    provider: OCI
     network_group: "{{ netfoundry_organization.network_group }}
   register: netfoundry_network
 
@@ -113,7 +120,7 @@ from ansible.module_utils._text import to_native
 from ansible.errors import AnsibleError
 from netfoundry.organization import Organization
 from netfoundry.network_group import NetworkGroup
-from netfoundry.network import Network
+from netfoundry.network import Network, Networks
 from netfoundry.utility import Utility
 from uuid import UUID
 
@@ -123,6 +130,7 @@ def run_module():
         name=dict(type='str', required=True),
         network_group=dict(type='dict', required=True),
         datacenter=dict(type='str', required=False),
+        provider=dict(type='str', required=False, default="OCI", choices=["OCI","AWS"]),
         version=dict(type='str', required=False),
         state=dict(type='str', required=False, default="PROVISIONED", choices=["PROVISIONING", "PROVISIONED", "DELETING", "DELETED", "present", "absent"]),
         size=dict(type='str', required=False, default="small", choices=["small","medium","large"]),
@@ -173,7 +181,7 @@ def run_module():
 
     # instantiate some utility methods like snake(), camel() for translating styles
     utility = Utility()
-
+    networks = Networks(setup=organization)
     network_group = NetworkGroup(
         organization,
         network_group_id=module.params['network_group']['id']
@@ -200,18 +208,13 @@ def run_module():
     # a datacenter (location code e.g. eu-west-2)
     if module.params['datacenter'] and module.params['state'] in ["PROVISIONING", "PROVISIONED"]:
         datacenter = module.params['datacenter']
-        nc_data_centers_by_location = network_group.nc_data_centers_by_location()
-        # check if UUIDv4
-        try: UUID(datacenter, version=4)
-        except ValueError:
-            # else assume is a location code and validate
-            if datacenter in nc_data_centers_by_location.keys():
-                properties['location'] = datacenter
-            else:
-                raise AnsibleError('Failed to find an exact match for datacenter location code "{}".'.format(datacenter))
-        else: 
-            # it's a UUID and so we reverse lookup the datacenter name by the UUID
-            properties['location'] = next(location for location, uuid in nc_data_centers_by_location.items() if uuid == module.params['datacenter'])
+        provider = module.params['provider']
+        nc_data_centers = networks.find_regions(provider=provider, location_code=datacenter)
+        if len(nc_data_centers) == 1:
+            properties['location'] = datacenter
+            properties['provider'] = provider
+        else:
+            raise AnsibleError(f'Failed to find exact exactly one datacenter location code "{datacenter}" from provider "{provider}"')
 
     # find any existing Network with the specified name within the Network Group
     networks_by_group = organization.get_networks_by_group(network_group_id=module.params['network_group']['id'])
