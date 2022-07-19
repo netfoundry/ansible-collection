@@ -44,7 +44,7 @@ options:
         choices: ["AWS", "AZURE", "GCP", "OCP"]
         default: AWS
     linkListener:
-        description: listen for router links on 80/tcp; all hosted routers (non-null dataCenter) have link listeners
+        description: listen for router links on 80/tcp; all hosted routers (non-null datacenter) have link listeners
         type: bool
         required: false
         default: false
@@ -54,7 +54,7 @@ options:
         required: false
         default: false
     rotateKey:
-        description: rotate and return the new key for registration of a NetFoundry Linux VM; requires state=present and null dataCenter i.e. NA to NF-hosted routers
+        description: rotate and return the new key for registration of a NetFoundry Linux VM; requires state=present and null datacenter i.e. NA to NF-hosted routers
         type: bool
         required: false
         default: false
@@ -124,34 +124,6 @@ EXAMPLES = r'''
         network: "{{ netfoundry_info.network }}"
     loop: "{{ netfoundry_info.hosted_edge_routers|map(attribute='name')|list }}"
 '''
-
-#   - name: create hosted edge router near EU in any available cloud provider
-#     netfoundry_router:
-#         name: EU Hosted router
-#         georegion: EuropeMiddleEastAfrica
-#         network: "{{ netfoundry_info.network }}"
-#         attributes:
-#         - "#global_hosted_routers"
-
-#   - name: create hosted edge router near US in AWS
-#     netfoundry_router:
-#         name: US Hosted router
-#         georegion: Americas
-#         provider: AWS
-#         network: "{{ netfoundry_info.network }}"
-#         attributes:
-#         - "#global_hosted_routers"
-
-
-# # customer routers may have a public link listener; 
-# # link listeners are typically provided only by NetFoundry-hosted routers
-#   - name: create a public customer-hosted edge router
-#     netfoundry_router:
-#         name: On-premises DMZ router for the Frankfurt Datacenter
-#         network: "{{ netfoundry_info.network }}"
-#         linkListener: True
-#         attributes:
-#         - "#frankfurt_edge_routers"
 
 RETURN = r'''
 # These are examples of possible return values, and in general should use other
@@ -290,16 +262,13 @@ def run_module():
         if state == "present":
             # sanity check datacenter IDs
             if module.params['datacenter']:
-                if not router['dataCenterId']:
+                if not router.get('region'):
                     if router['status'] == "PROVISIONING":
-                        raise Warning('WARN: existing router is still PROVISIONING and does not yet have a data center ID, and so a datacenter ID may not be assigned.')
+                        raise Warning('WARN: existing router is still PROVISIONING and does not yet have a region.')
                     else:
-                        raise AnsibleError('ERROR: existing router does not have a data center ID and is presumed customer-hosted, and so a datacenter ID may not be assigned.')
-                elif not router['dataCenterId'] == properties['data_center_id']:
-                    raise AnsibleError('ERROR: existing router is hosted in NF datacenter ID {:s}, but new datacenter ID is {:s}. Hosted routers may not be re-located.'.format(
-                        router['dataCenterId'],
-                        properties['data_center_id']
-                    ))
+                        raise AnsibleError('ERROR: existing router does not have a region and so is presumed customer-hosted, and so a datacenter (region) may not be assigned.')
+                elif router.get('region') and not router['region'] == properties['location_code']:
+                    raise AnsibleError(f"ERROR: existing router is hosted in NF datacenter {router['region']}, but new datacenter ID is {properties['location_code']}. Hosted routers may not be re-located.")
             for key in router.keys():
                 # if there's an exact match for the existing property in
                 # our override properties then replace it before patching
